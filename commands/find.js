@@ -2,12 +2,12 @@ const {
   SlashCommandBuilder,
   StringSelectMenuBuilder,
   ActionRowBuilder,
-  ComponentType,
+  ComponentType, userMention,
 } = require("discord.js");
 const axios = require("axios");
 const { createRune } = require("../util/createRuneCanvas");
 const { createAbilityCanvas } = require("../util/createAbilityCanvas");
-const { errorAPIMsg, noResultsMsg } = require("../util/messages");
+const { errorAPIMsg, noResultsMsg, requestErrMsg, fetchingDataMsg } = require("../util/messages");
 
 require("dotenv").config();
 
@@ -37,75 +37,89 @@ module.exports = {
         .setRequired(true)
     ),
   async execute(interaction) {
-    const type = interaction.options.getString("type");
-    const input = interaction.options.getString("input");
-    console.log(type, input);
+   try {
+     const type = interaction.options.getString("type");
+     const input = interaction.options.getString("input");
+     console.log(type, input);
 
-    const isAbility = type === 'ability';
+     const isAbility = type === 'ability';
 
-    const { data: responseBody, status } = await axios.get(`${process.env.BASE_API_URL}/${isAbility ? 'getChampionAbilities' : 'getRunes'}`);
+     const { data: responseBody, status } = await axios.get(`${process.env.BASE_API_URL}/${isAbility ? 'getChampionAbilities' : 'getRunes'}`);
 
-    if (status === 200) {
-      const { data } = responseBody;
+     if (status === 200) {
+       const { data } = responseBody;
 
-      const results = isAbility ? data.filter((result) =>
-        result.name.toLowerCase().includes(input.toLowerCase())
-      ) : data[type].filter((result) =>
-        result.name.toLowerCase().includes(input.toLowerCase())
-      );
-      console.log(results)
+       const results = isAbility ? data.filter((result) =>
+         result.name.toLowerCase().includes(input.toLowerCase())
+       ) : data[type].filter((result) =>
+         result.name.toLowerCase().includes(input.toLowerCase())
+       ).slice(0, 25);
+       console.log(results)
 
-      if (results.length === 0) return await interaction.reply(noResultsMsg);
+       if (results.length === 0) return await interaction.reply(noResultsMsg);
 
-      const selector = new StringSelectMenuBuilder()
-        .setCustomId("results")
-        .setPlaceholder("Make a selection")
-        .addOptions(
-          results.map((result, index) => {
-            if (isAbility) {
-              return {
-                label: result.name,
-                value: index.toString(),
-              };
-            } else {
-              return {
-                label: result.name,
-                description: `Faction: ${
-                  result.factions.length > 1
-                    ? result.factions.join(", ")
-                    : result.factions[0]
-                } | Rarity: ${result.rarity} | Nora: ${result.noraCost}`,
-                value: index.toString(),
-              };
-            }
-          })
-        );
+       const selector = new StringSelectMenuBuilder()
+         .setCustomId("results")
+         .setPlaceholder("Make a selection")
+         .addOptions(
+           results.map((result, index) => {
+             if (isAbility) {
+               return {
+                 label: result.name,
+                 value: index.toString(),
+               };
+             } else {
+               return {
+                 label: result.name,
+                 description: `Faction: ${
+                   result.factions.length > 1
+                     ? result.factions.join(", ")
+                     : result.factions[0]
+                 } | Rarity: ${result.rarity} | Nora: ${result.noraCost}`,
+                 value: index.toString(),
+               };
+             }
+           })
+         );
 
-      const row = new ActionRowBuilder().addComponents(selector);
+       const row = new ActionRowBuilder().addComponents(selector);
 
-      const response = await interaction.reply({
-        content: `Choose ${isAbility ? 'an ability' : 'a rune'} from the list`,
-        components: [row],
-        ephemeral: true
-      });
+       const response = await interaction.reply({
+         content: `Choose ${isAbility ? 'an ability' : 'a rune'} from the list`,
+         components: [row],
+         ephemeral: true
+       });
 
-      const collector = response.createMessageComponentCollector({
-        componentType: ComponentType.StringSelect,
-        time: 3_600_000,
-      });
+       const collector = response.createMessageComponentCollector({
+         componentType: ComponentType.StringSelect,
+         time: 3_600_000,
+       });
 
-      collector.on("collect", async (i) => {
-        const selection = i.values[0];
-        const rune = results[selection];
+       collector.on("collect", async (i) => {
+         try {
+           const selection = i.values[0];
+           const rune = results[selection];
 
-        const attachment = isAbility ? await createAbilityCanvas(rune) : await createRune(rune);
+           await i.reply({content: fetchingDataMsg, ephemeral: true});
 
-        await i.reply({ content: `ID: ${rune.id}`, files: [attachment] });
-      });
+           const attachment = isAbility ? await createAbilityCanvas(rune) : await createRune(rune, type);
+
+           await i.followUp({ content: `Here is the rune you selected ${userMention(interaction.user.id)}\nID: ${rune.id}`, files: [attachment] });
+
+           await i.deleteReply();
+         } catch(err) {
+           console.log(err.message);
+           await i.editReply(requestErrMsg);
+         }
+       });
 
 
-    } else {
-      await interaction.reply(errorAPIMsg);
-    }
+     } else {
+       await interaction.reply(errorAPIMsg);
+     }
+   } catch(err) {
+     console.log(err);
+     await interaction.reply(requestErrMsg);
+   }
   },
 };

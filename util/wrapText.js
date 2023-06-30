@@ -18,7 +18,6 @@ module.exports = {
         line = testLine;
       }
     }
-    console.log(line);
     context.fillText(line, x, y);
   }
 }

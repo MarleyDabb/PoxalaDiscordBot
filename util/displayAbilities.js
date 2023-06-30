@@ -1,6 +1,9 @@
 const Canvas = require("@napi-rs/canvas");
 const path = require("path");
 const { wrapText } = require("./wrapText");
+const { removeBrackets } = require("./helpers");
+
+require("dotenv").config();
 
 module.exports = {
   displayAbilities: async (abilityArray, startingX, startingY, context) => {
@@ -19,14 +22,14 @@ module.exports = {
 
       let abilityIcon;
 
-      const largeIcon = await Canvas.loadImage(`https://d2aao99y1mip6n.cloudfront.net/images/ability_icons/large/icon_${ability.iconName}.gif`).catch(err => {
+      const largeIcon = await Canvas.loadImage(`${process.env.POX_IMG_URL}/images/ability_icons/large/icon_${ability.iconName}.gif`).catch(err => {
         if (err) {
           console.log('Error finding large icon, will now check for small.');
           console.log(err.message);
         }
       });
 
-      if (!largeIcon) abilityIcon = await Canvas.loadImage(`https://d2aao99y1mip6n.cloudfront.net/images/ability_icons/small/icon_${ability.iconName}.gif`);
+      if (!largeIcon) abilityIcon = await Canvas.loadImage(`${process.env.POX_IMG_URL}/images/ability_icons/small/icon_${ability.iconName}.gif`);
       else abilityIcon = largeIcon;
 
       context.drawImage(abilityIcon, startingX + 3, (startingY + 3) + (i * toAddY), 43, 43);
@@ -51,7 +54,7 @@ module.exports = {
       context.fillStyle = '#262625';
 
 
-      const str = ability.shortDescription.replace(/<.*?>/g, "");
+      const str = removeBrackets(ability.shortDescription);
       wrapText(context, str, startingX + 50, (startingY + 21) + (i * toAddY), 455, 12);
     }
   }
