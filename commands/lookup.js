@@ -1,6 +1,11 @@
 const { SlashCommandBuilder, bold, userMention } = require("discord.js");
 const axios = require("axios");
-const { errorAPIMsg, noResultsMsg, requestErrMsg } = require("../util/messages");
+const {
+  errorAPIMsg,
+  noResultsMsg,
+  requestErrMsg,
+  fetchingDataMsg,
+} = require("../util/messages");
 const { capitalizeFirstLetter } = require("../util/helpers");
 module.exports = {
   data: new SlashCommandBuilder()
@@ -16,6 +21,8 @@ module.exports = {
     const abilityName = interaction.options.getString("ability");
 
     try {
+      await interaction.reply({ content: fetchingDataMsg, ephemeral: true });
+
       const { data: abilityResponseBody, status: abilityStatus } =
         await axios.get(`${process.env.BASE_API_URL}/getChampionAbilities`);
 
@@ -25,12 +32,10 @@ module.exports = {
         const abilityFound = abilityData.find(
           (ability) => ability.name.toLowerCase() === abilityName.toLowerCase()
         );
-        console.log(abilityFound);
 
         if (abilityFound) {
-          const { data: runeResponseBody, status: runeStatus } = await axios.get(
-            `${process.env.BASE_API_URL}/getRunes`
-          );
+          const { data: runeResponseBody, status: runeStatus } =
+            await axios.get(`${process.env.BASE_API_URL}/getRunes`);
 
           if (runeStatus === 200) {
             const { data: runeData } = runeResponseBody;
@@ -49,7 +54,11 @@ module.exports = {
 
             let filterTwo = champs.filter((champ) => {
               for (let i = 0; i < champ.abilitySets.length; i++) {
-                for (let x = 0; x < champ.abilitySets[i].abilities.length; x++) {
+                for (
+                  let x = 0;
+                  x < champ.abilitySets[i].abilities.length;
+                  x++
+                ) {
                   if (
                     champ.abilitySets[i].abilities[x].name.toLowerCase() ===
                     abilityName.toLowerCase()
@@ -62,22 +71,32 @@ module.exports = {
 
             const result = filterOne.concat(filterTwo);
 
+            await interaction.deleteReply();
+
             if (result.length > 0) {
               const champList = result.map((rune) => rune.name);
-              await interaction.reply(`:hatching_chick: ${userMention(interaction.user.id)} The following champions have the ability ${bold(capitalizeFirstLetter(abilityName))}:\n\n${champList.join(', ')}`)
+              await interaction.followUp(
+                `:hatching_chick: ${userMention(
+                  interaction.user.id
+                )} The following champions have the ability ${bold(
+                  capitalizeFirstLetter(abilityName)
+                )}:\n\n${champList.join(", ")}`
+              );
             } else {
-              return await interaction.reply(noResultsMsg);
+              return await interaction.followUp(noResultsMsg);
             }
-
           } else {
-            await interaction.reply(errorAPIMsg);
+            await interaction.followUp({
+              content: errorAPIMsg,
+              ephemeral: true,
+            });
           }
         }
       } else {
-        await interaction.reply(errorAPIMsg);
+        await interaction.followUp({ content: errorAPIMsg, ephemeral: true });
       }
-    } catch(err) {
-      await interaction.reply(requestErrMsg);
+    } catch (err) {
+      await interaction.followUp({ content: requestErrMsg, ephemeral: true });
       console.log(err.message);
     }
   },

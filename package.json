@@ -1,4 +1,7 @@
 {
+  "name": "poxala-discord-bot",
+  "version": "1.0.0",
+  "author": "Chuckaboo",
   "dependencies": {
     "@napi-rs/canvas": "^0.1.41",
     "axios": "^1.4.0",

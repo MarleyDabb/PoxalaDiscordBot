@@ -42,15 +42,17 @@ module.exports = {
         });
 
         await interaction.reply({
-          content: `Here is the graphic for ${bold(capitalizeFirstLetter(type))}, graphic created by GabrielQ.`,
+          content: `Here is the graphic for ${bold(
+            capitalizeFirstLetter(type)
+          )}, graphic created by GabrielQ.`,
           files: [attachment],
         });
       } else {
-        await interaction.reply(noResultsMsg);
+        await interaction.reply({ content: noResultsMsg, ephemeral: true });
       }
     } catch (err) {
       console.log(err);
-      await interaction.reply(requestErrMsg);
+      await interaction.reply({ content: requestErrMsg, ephemeral: true });
     }
   },
 };

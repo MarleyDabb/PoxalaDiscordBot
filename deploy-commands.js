@@ -13,6 +13,7 @@ const commandFiles = fs
 
 for (const file of commandFiles) {
   console.log(commandsPath);
+  console.log(file);
   // Grab all the command files from the commands directory you created earlier
   const filePath = path.join(commandsPath, file);
   const command = require(filePath);
