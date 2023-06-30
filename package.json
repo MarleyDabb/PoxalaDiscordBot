@@ -2,6 +2,11 @@
   "name": "poxala-discord-bot",
   "version": "1.0.0",
   "author": "Chuckaboo",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node test.js"
+  },
   "dependencies": {
     "@napi-rs/canvas": "^0.1.41",
     "axios": "^1.4.0",
