@@ -4,17 +4,23 @@ const { getFactionNumber, getFrameRarity } = require("./getFactionNumber");
 const { displayAbilities } = require("./displayAbilities");
 const { wrapText } = require("./wrapText");
 const { removeBrackets } = require("./helpers");
+const path = require("path");
+const { GlobalFonts } = require("@napi-rs/canvas");
 
 require("dotenv").config();
 
 module.exports = {
   createRune: async (rune, type) => {
+    GlobalFonts.registerFromPath(path.join(__dirname, "..", "/fonts/ARIAL.TTF"), "Arial");
+    // path.join(__dirname, "..", `/images/${type}.png`)
     // Original: 1350 : 480
     const width = type === "champs" ? 1350 : 730;
     const height = type === "champs" ? 545 : 440;
 
     const canvas = Canvas.createCanvas(width, height);
     const context = canvas.getContext("2d");
+
+
 
     const factionNum = getFactionNumber(rune.factions);
 

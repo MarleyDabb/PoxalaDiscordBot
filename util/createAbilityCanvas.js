@@ -1,8 +1,11 @@
 const Canvas = require("@napi-rs/canvas");
 const { displayAbilities } = require("./displayAbilities");
 const { AttachmentBuilder } = require("discord.js");
+const { GlobalFonts } = require("@napi-rs/canvas");
+const path = require("path");
 module.exports = {
   createAbilityCanvas: async (ability) => {
+    GlobalFonts.registerFromPath(path.join(__dirname, "..", "/fonts/ARIAL.TTF"), "Arial");
     const canvas = Canvas.createCanvas(500, 60);
     const context = canvas.getContext("2d");
 

@@ -48,7 +48,6 @@ module.exports = {
 
       const type = interaction.options.getString("type");
       const input = interaction.options.getString("input");
-      console.log(type, input);
 
       // Do a reply here ?
 
@@ -72,7 +71,6 @@ module.exports = {
                 result.name.toLowerCase().includes(input.toLowerCase())
               )
               .slice(0, 25);
-        console.log(results);
 
         if (results.length === 0) return await interaction.followUp({ content: noResultsMsg, ephemeral: true});
 

@@ -12,8 +12,6 @@ const commandFiles = fs
   .filter((file) => file.endsWith(".js"));
 
 for (const file of commandFiles) {
-  console.log(commandsPath);
-  console.log(file);
   // Grab all the command files from the commands directory you created earlier
   const filePath = path.join(commandsPath, file);
   const command = require(filePath);
@@ -39,9 +37,8 @@ const rest = new REST().setToken(process.env.DISCORD_TOKEN);
 
     // The put method is used to fully refresh all commands in the guild with the current set
     const data = await rest.put(
-      Routes.applicationGuildCommands(
-        process.env.CLIENT_ID,
-        process.env.GUILD_ID
+      Routes.applicationCommands(
+        process.env.CLIENT_ID
       ),
       { body: commands }
     );

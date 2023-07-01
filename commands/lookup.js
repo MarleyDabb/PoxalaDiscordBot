@@ -71,10 +71,12 @@ module.exports = {
 
             const result = filterOne.concat(filterTwo);
 
-            await interaction.deleteReply();
-
             if (result.length > 0) {
               const champList = result.map((rune) => rune.name);
+              await interaction.deleteReply();
+              const channel = interaction.channel
+              console.log(channel);
+
               await interaction.followUp(
                 `:hatching_chick: ${userMention(
                   interaction.user.id
@@ -83,7 +85,7 @@ module.exports = {
                 )}:\n\n${champList.join(", ")}`
               );
             } else {
-              return await interaction.followUp(noResultsMsg);
+              return await interaction.followUp({ content: noResultsMsg, ephemeral: true });
             }
           } else {
             await interaction.followUp({
@@ -91,6 +93,8 @@ module.exports = {
               ephemeral: true,
             });
           }
+        } else {
+          await interaction.followUp({ content: noResultsMsg, ephemeral: true });
         }
       } else {
         await interaction.followUp({ content: errorAPIMsg, ephemeral: true });
