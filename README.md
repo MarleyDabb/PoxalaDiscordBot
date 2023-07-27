@@ -1,6 +1,5 @@
 # Poxnora Discord Bot
-Created by lanu/chuckaboo/poxala, written in nodejs.
-Message me on discord at lnu if you need assistance setting this up.
+A discord bot created for the trading card game Poxnora. Displays rune, ability, and relocation information.
 
 
 ## Features
